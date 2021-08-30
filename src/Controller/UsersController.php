@@ -16,7 +16,7 @@ class UsersController extends AppController
     {
         parent::beforeFilter($event);
     
-        $this->Authentication->allowUnauthenticated(['login','index']);
+        $this->Authentication->allowUnauthenticated(['login']);
     }
 
     public function logout()
@@ -35,6 +35,7 @@ class UsersController extends AppController
             $target = $this->Authentication->getLoginRedirect() ?? '/users';
             return $this->redirect($target);
         }
+        $this->viewBuilder()->setLayout('CakeLte.login');
         if ($this->request->is('post') && !$result->isValid()) {
             $this->Flash->error('Invalid username or password');
         }

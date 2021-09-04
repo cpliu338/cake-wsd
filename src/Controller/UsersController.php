@@ -47,14 +47,15 @@ class UsersController extends AppController
      */
     public function index()
     {
+        $this->viewBuilder()->setLayout('cake_default');
         $identity = $this->Authentication->getIdentity();
-        $users = $identity->username;
-        $array = ['hash'=>crypt('server2007','se'), 'one'=>1, 'hello'=>'world'];
+        $users = $this->paginate($this->Users);
+        $array = ['hash'=>crypt('123','123'), 'one'=>1, 'hello'=>'world'];
         $data = new ArrayObject($array, ArrayObject::ARRAY_AS_PROPS);
-        $hash = $data->hash;
-        //$this->paginate($this->Users);
+        $hash = $identity['hash'];
+        //$data->hash;
 
-        $this->set(compact('users', 'data', 'array', 'hash'));
+        $this->set(compact('users', 'data', 'identity', 'hash'));
     }
 
     /**

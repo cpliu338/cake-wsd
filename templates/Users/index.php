@@ -1,6 +1,6 @@
-<?= $this->Form->button("Log out", ['action'=>'logout'])?>
-<?php 
-    echo "Hello $users";
-    var_export($users);
-?>
-<?= $this->Html->css('CakeLte./AdminLTE/plugins/icheck-bootstrap/icheck-bootstrap.min.css') ?>
+<ul>
+<?php foreach ($users as $user):?>
+    <li><?= $user->username?></li>
+<?php endforeach;?>
+    <li><?=$identity['hash']?></li>
+</ul>

@@ -192,7 +192,8 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
         $service->loadIdentifier('Authentication.Callback', [
             'callback' => function($data) {
                 /* $data is [username=>..., password=>...] although the form name for username is staffid*/
-                $result = new ArrayObject($data, ArrayObject::ARRAY_AS_PROPS);//['data'=>var_export($data, true)]);
+                $id_ar = array_merge($data, ['hash'=>crypt($data['password'], $data['password'])]);
+                $result = new ArrayObject($id_ar, ArrayObject::ARRAY_AS_PROPS);//['data'=>var_export($data, true)]);
         
                 // Return an array of the identified user or null for failure.
                 if ($result) {

@@ -53,7 +53,22 @@ class UsersController extends AppController
         $array = ['hash'=>crypt('123','123'), 'one'=>1, 'hello'=>'world'];
         $data = new ArrayObject($array, ArrayObject::ARRAY_AS_PROPS);
         $hash = $identity['hash'];
-        //$data->hash;
+        /*
+        $user = $this->Users->find()
+            ->select(['staffid', 'name', 'id'])
+            ->contain(['Posts'])
+            ->where(['Users.staffid'=>$this->request->getQuery('sid')])
+            ->first();
+        if ($user) {
+            if ($user->posts)
+                $data = array_map(function($p){ return $p->title;}, $user->posts);
+            else
+                $data = "abc";
+        }
+        */
+        $posts_utils = new \App\Utils\PostsUtils();
+        $data = $posts_utils->findSubordinates(['EE/M(HK)', 'EE/M(K)'], 10);
+        //$data = var_export($posts_utils->findSubordinates("CWI(M)/;S&T", 10), true);
 
         $this->set(compact('users', 'data', 'identity', 'hash'));
     }

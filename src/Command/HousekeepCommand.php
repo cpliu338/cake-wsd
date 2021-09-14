@@ -27,7 +27,13 @@ class HousekeepCommand extends Command
         switch ($model) {
             case 'Users': return $this->housekeepUsers($io); break;
             case 'Posts': return $this->housekeepPosts($io); break;
+            case 'Test': return $this->housekeepTest($io); break;
         }
+    }
+
+    private function housekeepTest(ConsoleIo $io) {
+        $posts = new \App\Utils\PostsUtils();
+        $io->out(var_export($posts->findSubordinates("", 10), true));
     }
 
     private function housekeepUsers(ConsoleIo $io) {
@@ -37,6 +43,7 @@ class HousekeepCommand extends Command
     }
 
     private function housekeepPosts(ConsoleIo $io) {
+        // TODO trim leading and trailing spaces, some posts are no good
         $posts = $this->getTableLocator()->get('Posts');
         $users = $this->getTableLocator()->get('Users');
         $vacant = $users->findByName('vacant')->first();
@@ -71,8 +78,8 @@ class HousekeepCommand extends Command
         $parser = parent::getOptionParser();
 
         $parser->addArgument('model', ['choices'=>[
-            'Users', 'Posts'
-        ], 'help'=>'Model to housekeep, Users | Posts' ,'required'=>true]);
+            'Users', 'Posts', 'Test'
+        ], 'help'=>'Model to housekeep, Users | Posts | Test' ,'required'=>true]);
 
         // add option dummyize
 

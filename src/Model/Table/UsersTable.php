@@ -29,6 +29,26 @@ use Cake\Validation\Validator;
  */
 class UsersTable extends Table
 {
+
+    /**
+     * Find all the users with certain ranks and holding a valid post (so not retired, etc)
+     * @param Query $query the original query
+     * @param array $options option ranks ia a comma delimited list of ranks
+     * @return Query the resulting query
+     */
+    public function findRanksWithPosts(Query $query, array $options) {
+        $ranks = array_map(
+            function ($item) 
+            {
+                return trim($item);
+            }, 
+            explode(',',$options['ranks'])
+        );
+        $query = $query->contain(['Posts'])->where(['rank IN'=>$ranks]);
+        return $query->matching('Posts', function ($q) {
+            return $q->where(['Posts.id >'=>0]);
+        });
+    }
     /**
      * Initialize method
      *

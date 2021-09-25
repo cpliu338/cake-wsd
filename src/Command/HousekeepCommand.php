@@ -35,13 +35,18 @@ class HousekeepCommand extends Command
     }
 
     private function housekeepTest(ConsoleIo $io) {
-        $posts = new \App\Utils\PostsUtils();
-        $usersTable = $this->getTableLocator()->get('Users');
-        foreach ($usersTable->find('ranksWithPosts', ['ranks'=>" SEE, SME"])->order('name') as $u) {
-            $io->out($u->name);
-            foreach ($u->posts as $p)
-                $io->out($p->title);
-        }
+        $util = new \App\Utils\CourseUtils($this->getTableLocator());
+        $courseGroupsTable = $this->getTableLocator()->get('CourseGroups');
+        $courseInstancesTable = $this->getTableLocator()->get('CourseInstances');
+        /*
+        $cg = $util->DummyCourse('MEM');
+        $courseGroupsTable->saveOrFail($cg);
+        */
+        $cg = $courseGroupsTable->get(1892);
+        $ci = $util->addDummyInstance($cg);
+        //$ci = $util->nextCourseCode($cg->division);
+        $courseInstancesTable->save($ci);
+        $io->out(var_export($ci, true));
     }
 
     private function housekeepCourseGroups(ConsoleIo $io) {

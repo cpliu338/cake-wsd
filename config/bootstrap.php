@@ -217,3 +217,6 @@ TypeFactory::map('time', StringType::class);
 //Inflector::rules('plural', ['/^(inflect)or$/i' => '\1ables']);
 //Inflector::rules('irregular', ['red' => 'redlings']);
 //Inflector::rules('uninflected', ['dontinflectme']);
+
+\Cake\I18n\FrozenTime::setToStringFormat('yyyy-MM-dd HH:mm:ss');
+\Cake\I18n\FrozenDate::setToStringFormat('yyyy-MM-dd');

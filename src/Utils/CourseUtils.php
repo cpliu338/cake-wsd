@@ -6,6 +6,7 @@ namespace App\Utils;
 use Cake\ORM\Locator\TableLocator;
 use Cake\I18n\FrozenTime;
 use Cake\I18n\FrozenDate;
+use Cake\Log\Log;
 use App\Model\Entity\CourseGroup;
 
 class CourseUtils {
@@ -17,19 +18,46 @@ class CourseUtils {
     public function __construct(TableLocator $tableLocator) {
         $this->CourseGroups = $tableLocator->get('CourseGroups');
         $this->CourseInstances = $tableLocator->get('CourseInstances');
+        $this->Users = $tableLocator->get('Users');
+        $this->ApplicationForms = $tableLocator->get('ApplicationForms'); 
     }
 
     /**
      * Invite course, generate application forms, check instances, do not invite if none
      * @param CourseGroup $cg the course group to invite
      * @param array $invited_ranks to ranks to invite
+     * @return number of application forms created
      */
-    public function invite(CourseGroup $cg, array $invited_ranks) : int {
-        // 
+    public function invite(CourseGroup $cg, array $invited_ranks) {//}: int {
+        // the following to be moved to app.php
+        $tree = ['MEM'=>'FB%', 'MEP'=>'FC%'];
+        // ===================
         $num = $this->CourseInstances->find()->where(['course_group_id'=>$cg->id])->count();
         if (!$num)
             return $num;
-        return $num;
+        $values_array = [
+            'course_group_id' => $cg->id,
+            'choice' => '',
+            'accept_other' => false,
+            'status_priority' => 0,
+            //'status' => 'Fresh',
+            'recommendation_priority' => 0,
+            'approval_priority' => 0,
+            'nominaation_priority' => 0,
+        ];
+        $users = $this->Users->find('ranksWithPosts', ['ranks'=>implode(',',$invited_ranks)])
+            ->where(['Users.tree_code LIKE'=>$tree[$cg->division]]);
+        $result = 0;
+        foreach ($users as $user) {
+            $values_array['user_id'] = $user->id;
+            $entity = $this->ApplicationForms->newEntity($values_array);
+            Log::write('error', "R" . $result);
+            if ($this->ApplicationForms->save($entity))
+                $result ++;
+            else
+                Log::write('error', var_export($entity->getErrors(), true));
+        }
+        return $result;
     }
 
     public function addDummyInstance(CourseGroup $cg) {
@@ -43,8 +71,9 @@ class CourseUtils {
             'venue' => 'TBA',
             'remark' => ''
         ];//return $nom_close;
+        $n_instances = $this->CourseInstances->find()->where(['course_group_id'=>$cg->id])->count();
         $ci = $this->CourseInstances->newEntity($dummy_course_array);
-        $ci->start_at = $nom_close->hour(9)->addDays(10);
+        $ci->start_at = $nom_close->hour(9)->addDays(10+$n_instances);
         $ci->end_at =  $nom_close->hour(17)->addDays(10);
         return $ci;
     }
@@ -64,19 +93,7 @@ class CourseUtils {
 
     public function DummyCourse(string $division) {
         $now = FrozenTime::now();
-        $todayAt17 = (new FrozenTime())->hour(17)->minute(0)->second(0);
-        // this switch block to be moved to housekeep command invite.
-        switch ($division) {
-            case 'MEM': 
-                $invited_ranks = [$division => ['SARTI','WM1M']]; 
-                break; // qty 1, 2
-            case 'MEP':
-                $invited_ranks = [$division => ['STOI','WS1E']]; 
-                break; // qty 3, 4
-            default:
-                $invited_ranks = [$division => []]; 
-        }
-        
+        $todayAt17 = (new FrozenTime())->hour(17)->minute(0)->second(0);        
         $dummy_course_array = [
             'title' => sprintf('Dummy course at %s', $now->i18nFormat()),
             'application_close_at' => $todayAt17->addDays(10)->i18nFormat(),

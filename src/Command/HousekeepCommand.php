@@ -26,12 +26,16 @@ class HousekeepCommand extends Command
     public function execute(Arguments $args, ConsoleIo $io)
     {
         $model = $args->getArgument('model');
+        /*
         switch ($model) {
             case 'Users': return $this->housekeepUsers($io); break;
             case 'Posts': return $this->housekeepPosts($io); break;
             case 'Test': return $this->housekeepTest($io); break;
             case 'CourseGroups': return $this->housekeepCourseGroups($io); break;
         }
+        */
+        $method = 'housekeep' . $model;
+        $this->{$method}($io);
     }
 
     private function housekeepTest(ConsoleIo $io) {
@@ -45,8 +49,12 @@ class HousekeepCommand extends Command
         $cg = $courseGroupsTable->get(1892);
         $ci = $util->addDummyInstance($cg);
         //$ci = $util->nextCourseCode($cg->division);
-        $courseInstancesTable->save($ci);
-        $io->out(var_export($ci, true));
+        if ($courseInstancesTable->save($ci)) {
+            $io->out($ci->code);
+        }
+        else {
+            $io->out(var_export($ci, true));
+        }
     }
 
     private function housekeepCourseGroups(ConsoleIo $io) {
@@ -59,6 +67,27 @@ class HousekeepCommand extends Command
             'application_close_at' => $todayAt9->addDays(10)
         ]);
         $io->out($todayAt9->nice());
+    }
+
+    private function housekeepInvite(ConsoleIo $io) {
+        $cgid = 1892;
+        $courseGroupsTable = $this->getTableLocator()->get('CourseGroups');
+        $usersTable = $this->getTableLocator()->get('Users');
+        $cg = $courseGroupsTable->get(1892);
+        $util = new \App\Utils\CourseUtils($this->getTableLocator());
+        $division = $cg->division;
+        switch ($division) {
+            case 'MEM': 
+                $invited_ranks = ['SARTI','WM1M']; 
+                break; // qty 1, 2
+            case 'MEP':
+                $invited_ranks = ['STOI','WS1E']; 
+                break; // qty 3, 4
+            default:
+                $invited_ranks = []; 
+        }
+        $result = $util->invite($cg, $invited_ranks);
+        $io->out(var_export($result, true));
     }
 
     private function housekeepUsers(ConsoleIo $io) {
@@ -108,8 +137,8 @@ class HousekeepCommand extends Command
         $parser = parent::getOptionParser();
 
         $parser->addArgument('model', ['choices'=>[
-            'Users', 'Posts', 'Test', 'CourseGroups'
-        ], 'help'=>'Model to housekeep, Users | Posts | CourseGroups | Test' ,'required'=>true]);
+            'Users', 'Posts', 'Test', 'CourseGroups', 'Invite'
+        ], 'help'=>'Model to housekeep, Users | Posts | CourseGroups | ApplicationForms | Test' ,'required'=>true]);
 
         // add option dummyize
 

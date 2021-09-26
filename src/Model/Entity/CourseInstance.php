@@ -39,15 +39,4 @@ class CourseInstance extends Entity
         'course_group' => true,
     ];
 
-    protected function _setStartAt($start_at) {
-        if ($start_at instanceof FrozenTime)
-            return $start_at->i18nFormat();
-        return $start_at;
-    }
-
-    protected function _setEndAt($end_at) {
-        if ($end_at instanceof FrozenTime)
-            return $end_at->i18nFormat();
-        return $end_at;
-    }
 }

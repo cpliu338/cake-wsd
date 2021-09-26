@@ -43,6 +43,7 @@ class UsersTable extends Table
                 return trim($item);
             }, 
             explode(',',$options['ranks'])
+            //$options['ranks']
         );
         $query = $query->contain(['Posts'])->where(['rank IN'=>$ranks]);
         return $query->matching('Posts', function ($q) {

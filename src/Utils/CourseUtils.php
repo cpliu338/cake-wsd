@@ -14,6 +14,8 @@ class CourseUtils {
     /* table objects */
     var $CourseGroups;
     var $CourseInstances;
+    var $Users;
+    var $ApplicationForms;
 
     public function __construct(TableLocator $tableLocator) {
         $this->CourseGroups = $tableLocator->get('CourseGroups');
@@ -78,7 +80,12 @@ class CourseUtils {
         return $ci;
     }
 
-    public function nextCourseCode($division) {
+    /**
+     * Find the next available course code MEM23456 ...
+     * @param $division the division: MEM | MEP | DES
+     * @return the next CourseCode
+     */
+    public function nextCourseCode($division) : string {
         $last_code_num = 1;
         foreach ($this->CourseInstances->find()->where(['code LIKE'=> $division . '%'])->order('code desc')
                 as $ci) {

@@ -67,8 +67,9 @@ class UsersController extends AppController
         }
         */
         $posts_utils = new \App\Utils\PostsUtils();
-        $data = $posts_utils->findSubordinates(['EE/M(HK)', 'EE/M(K)'], 10);
-        //$data = var_export($posts_utils->findSubordinates("CWI(M)/;S&T", 10), true);
+        $data = $posts_utils->findSubordinates(['EE/M(HK)', 'EE/M(K)'], 'recommending');
+        $this->loadModel('ApplicationForms');
+        $data = $this->ApplicationForms->find('myApplicableCourses', ['user_id'=>321])->toArray();
 
         $this->set(compact('users', 'data', 'identity', 'hash'));
     }

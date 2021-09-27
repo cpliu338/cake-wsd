@@ -39,22 +39,31 @@ class HousekeepCommand extends Command
     }
 
     private function housekeepTest(ConsoleIo $io) {
+        $this->loadModel('ApplicationForms');
+        $util = new \App\Utils\PostsUtils($this->getTableLocator());
+        foreach ($util->findMyActionableCourses(273, 'approving')->contain(['Users']) as $form) {
+            //$io->out(var_export($form->course_group->title,true));
+            $io->out(var_export($form,true));
+        }
+        /*
+        $q = $this->ApplicationForms->find('myApplicableCourses', ['user_id'=>321]);
+        foreach ($q as $form) {
+            $io->out($form->course_group_id);
+        }
         $util = new \App\Utils\CourseUtils($this->getTableLocator());
         $courseGroupsTable = $this->getTableLocator()->get('CourseGroups');
         $courseInstancesTable = $this->getTableLocator()->get('CourseInstances');
-        /*
         $cg = $util->DummyCourse('MEM');
         $courseGroupsTable->saveOrFail($cg);
-        */
         $cg = $courseGroupsTable->get(1892);
         $ci = $util->addDummyInstance($cg);
-        //$ci = $util->nextCourseCode($cg->division);
         if ($courseInstancesTable->save($ci)) {
             $io->out($ci->code);
         }
         else {
             $io->out(var_export($ci, true));
         }
+        */
     }
 
     private function housekeepCourseGroups(ConsoleIo $io) {

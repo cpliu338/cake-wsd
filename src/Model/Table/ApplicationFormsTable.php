@@ -8,7 +8,7 @@ use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\Event\EventInterface;
-
+use Cake\I18n\FrozenTime;
 /**
  * ApplicationForms Model
  *
@@ -31,8 +31,26 @@ use Cake\Event\EventInterface;
  */
 class ApplicationFormsTable extends Table
 {
+
+
+    /**
+     * Find all the users applicable courses, i.e. before deadline
+     * @param Query $query the original query
+     * @param array $options option user_id is the user's id
+     * @return Query the resulting query
+     */
+    public function findMyApplicableCourses(Query $query, array $options) : Query {
+        $user_id = $options['user_id'] ?? 0;
+        $now = FrozenTime::now();
+        return $this->find()->contain(['CourseGroups'])->where([
+            'ApplicationForms.user_id' => $user_id,
+            'CourseGroups.application_close_at >' => $now
+        ]);
+    }
+
     public function beforeSave(EventInterface $event, $entity, $options)
     {
+        /* this should be looked up from app.php */
         switch ($entity->status_priority) {
             case -2: $entity->status = 'Not Approved'; break;
             case -1: $entity->status = 'Not Recommended'; break;

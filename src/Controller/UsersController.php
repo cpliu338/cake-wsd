@@ -50,28 +50,11 @@ class UsersController extends AppController
         $this->viewBuilder()->setLayout('cake_default');
         $identity = $this->Authentication->getIdentity();
         $users = $this->paginate($this->Users);
-        $array = ['hash'=>crypt('123','123'), 'one'=>1, 'hello'=>'world'];
-        $data = new ArrayObject($array, ArrayObject::ARRAY_AS_PROPS);
-        $hash = $identity['hash'];
-        /*
-        $user = $this->Users->find()
-            ->select(['staffid', 'name', 'id'])
-            ->contain(['Posts'])
-            ->where(['Users.staffid'=>$this->request->getQuery('sid')])
-            ->first();
-        if ($user) {
-            if ($user->posts)
-                $data = array_map(function($p){ return $p->title;}, $user->posts);
-            else
-                $data = "abc";
-        }
-        */
-        $posts_utils = new \App\Utils\PostsUtils();
-        $data = $posts_utils->findSubordinates(['EE/M(HK)', 'EE/M(K)'], 'recommending');
-        $this->loadModel('ApplicationForms');
-        $data = $this->ApplicationForms->find('myApplicableCourses', ['user_id'=>321])->toArray();
-
-        $this->set(compact('users', 'data', 'identity', 'hash'));
+        $data = ['username'=>'3178', 'password'=>'123'];
+        $users_utils = new \App\Utils\UsersUtils();
+        $user = $users_utils->login($data);
+        $data = $identity['posts'];
+        $this->set(compact('users', 'data', 'identity', 'user'));
     }
 
     /**

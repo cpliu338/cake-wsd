@@ -7,9 +7,12 @@ use Cake\ORM\Locator\TableLocator;
 use Cake\I18n\FrozenTime;
 use Cake\I18n\FrozenDate;
 use Cake\Log\Log;
+use Cake\Core\Configure;
+use Cake\ORM\Query;
+use Cake\Collection\Collection;
 use App\Model\Entity\CourseGroup;
 
-class CourseUtils {
+class CoursesUtils {
 
     /* table objects */
     var $CourseGroups;
@@ -25,40 +28,73 @@ class CourseUtils {
     }
 
     /**
-     * Invite course, generate application forms, check instances, do not invite if none
-     * @param CourseGroup $cg the course group to invite
-     * @param array $invited_ranks to ranks to invite
-     * @return number of application forms created
+     * Get a unique array of user ids to invite
+     * @param mixed $invitees if an array, assume format same as PostsUtils::findSubordinates(),
+     * if Query, extract to user ids
+     * @return 
      */
-    public function invite(CourseGroup $cg, array $invited_ranks) {//}: int {
-        // the following to be moved to app.php
-        $tree = ['MEM'=>'FB%', 'MEP'=>'FC%'];
-        // ===================
-        $num = $this->CourseInstances->find()->where(['course_group_id'=>$cg->id])->count();
-        if (!$num)
-            return $num;
+    private function _cleanse ($invitees) {
+        if (is_array($invitees)) {
+            /*
+            if (empty($invitees))
+                return [];
+            else
+                $invitees = $posts_util->findSubordinates($posts, 'recommending');
+            */
+            return array_unique(array_map(function ($post) {return $post['user_id'];}, $invitees));
+        }
+        if ($invitees instanceof Query) {
+            switch ($invitees->getRepository()->getAlias()) {
+                case 'Users':
+                    return $invitees->distinct('Users.id')->extract('id')->toArray();
+                case 'Posts';
+                    return $invitees->contain(['Users'])->distinct('Users.id')->extract('user.id')->toArray();
+            }
+        }
+    }
+
+    /**
+     * Invite course, generate application forms, check instances, do not invite if none
+     * @param int $cgid the course group id to invite
+     * @param mixed $users to invite
+     * @return array of id for application forms created
+     */
+    public function invite(int $cgid, /*Query|array*/ $invitees) : array {
+        $result = [];
         $values_array = [
-            'course_group_id' => $cg->id,
+            'course_group_id' => $cgid,
             'choice' => '',
             'accept_other' => false,
             'status_priority' => 0,
-            //'status' => 'Fresh',
             'recommendation_priority' => 0,
             'approval_priority' => 0,
             'nominaation_priority' => 0,
         ];
+        $users = $this->_cleanse($invitees);
+        foreach ($users as $user) {
+            if (is_array($users))
+                $values_array['user_id'] = $user;
+            else
+                $values_array['user_id'] = $user->id;
+            $entity = $this->ApplicationForms->newEntity($values_array);
+            if ($this->ApplicationForms->save($entity))
+                $result[] = $entity->id;
+            else
+                throw new \Exception(var_export($entity->getErrors(), true));
+        }
+        return $result;
+    }
+
+    /**
+     * Invite course, generate application forms, check instances, do not invite if none
+     * @param CourseGroup $cg the course group to invite
+     * @param array $invited_ranks to ranks to invite
+     * @return array of id for application forms created
+     */
+    public function inviteByRanks(CourseGroup $cg, array $invited_ranks) : array {
         $users = $this->Users->find('ranksWithPosts', ['ranks'=>implode(',',$invited_ranks)])
             ->where(['Users.tree_code LIKE'=>$tree[$cg->division]]);
-        $result = 0;
-        foreach ($users as $user) {
-            $values_array['user_id'] = $user->id;
-            $entity = $this->ApplicationForms->newEntity($values_array);
-            Log::write('error', "R" . $result);
-            if ($this->ApplicationForms->save($entity))
-                $result ++;
-            else
-                Log::write('error', var_export($entity->getErrors(), true));
-        }
+        $result = $this->invite($cg->id, $users);
         return $result;
     }
 

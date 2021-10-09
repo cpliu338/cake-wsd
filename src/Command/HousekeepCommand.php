@@ -8,7 +8,9 @@ use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Log\Log;
+use Cake\Core\Configure;
 use Cake\I18n\FrozenTime;
+use Cake\Collection\Collection;
 use DateTime;
 
 /**
@@ -39,31 +41,15 @@ class HousekeepCommand extends Command
     }
 
     private function housekeepTest(ConsoleIo $io) {
-        $this->loadModel('ApplicationForms');
-        $util = new \App\Utils\PostsUtils($this->getTableLocator());
-        foreach ($util->findMyActionableCourses(273, 'approving')->contain(['Users']) as $form) {
-            //$io->out(var_export($form->course_group->title,true));
-            $io->out(var_export($form,true));
-        }
-        /*
-        $q = $this->ApplicationForms->find('myApplicableCourses', ['user_id'=>321]);
-        foreach ($q as $form) {
-            $io->out($form->course_group_id);
-        }
-        $util = new \App\Utils\CourseUtils($this->getTableLocator());
-        $courseGroupsTable = $this->getTableLocator()->get('CourseGroups');
-        $courseInstancesTable = $this->getTableLocator()->get('CourseInstances');
-        $cg = $util->DummyCourse('MEM');
-        $courseGroupsTable->saveOrFail($cg);
-        $cg = $courseGroupsTable->get(1892);
-        $ci = $util->addDummyInstance($cg);
-        if ($courseInstancesTable->save($ci)) {
-            $io->out($ci->code);
-        }
-        else {
-            $io->out(var_export($ci, true));
-        }
-        */
+        $this->loadModel('Posts');
+        $tree = Configure::read('Division.tree');
+        $course_util = new \App\Utils\CoursesUtils($this->getTableLocator());
+        $users = $this->Posts->find()
+            ->where(['title IN'=>['ME/P(4)', 'ME/P(8)', 'ME/P(13)']]);
+        //$io->out(var_export($users));
+        $io->out(var_export($course_util->cleanse($users), true));
+        $io->out($tree['MEM']);
+
     }
 
     private function housekeepCourseGroups(ConsoleIo $io) {
@@ -80,23 +66,22 @@ class HousekeepCommand extends Command
 
     private function housekeepInvite(ConsoleIo $io) {
         $cgid = 1892;
-        $courseGroupsTable = $this->getTableLocator()->get('CourseGroups');
+        //$courseGroupsTable = $this->getTableLocator()->get('CourseGroups');
         $usersTable = $this->getTableLocator()->get('Users');
-        $cg = $courseGroupsTable->get(1892);
-        $util = new \App\Utils\CourseUtils($this->getTableLocator());
-        $division = $cg->division;
-        switch ($division) {
-            case 'MEM': 
-                $invited_ranks = ['SARTI','WM1M']; 
-                break; // qty 1, 2
-            case 'MEP':
-                $invited_ranks = ['STOI','WS1E']; 
-                break; // qty 3, 4
-            default:
-                $invited_ranks = []; 
+        //$cg = $courseGroupsTable->get(1892);
+        $posts_util = new \App\Utils\PostsUtils($this->getTableLocator());
+        $posts = ['EE/M(NTE1)'];
+        $course_util = new \App\Utils\CoursesUtils($this->getTableLocator());
+        $result2 = [];
+        try {
+            $subordinates = $posts_util->findSubordinates($posts, 'recommending');
+            //$subordinate_ids = array_unique(array_map(function ($post) {return $post['user_id'];}, $subordinates));
+            $result2 = $course_util->invite($cgid, $subordinates);
         }
-        $result = $util->invite($cg, $invited_ranks);
-        $io->out(var_export($result, true));
+        catch (\Exception $ex) {
+            $io->out($ex->getMessage());
+        }
+        $io->out(var_export($result2, true));
     }
 
     private function housekeepUsers(ConsoleIo $io) {

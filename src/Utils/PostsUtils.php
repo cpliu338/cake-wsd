@@ -52,7 +52,7 @@ class PostsUtils {
      * @param $posts the given posts
      * @param $mode recommending | approving, nothing else
      * @param $limit the max rows return, 0 means no limit
-     * @return array of found posts: [[id=xx, user_id=>yyy, title=>'STO'], [id=xx, user_id=>yyy, title=>'TO'], ...]
+     * @return array of found (user_id NOT unique) posts: [[id=xx, user_id=>yyy, title=>'STO'], [id=xx, user_id=>yyy, title=>'TO'], ...]
      */
     public function findSubordinates(array $posts, string $mode, int $limit=0) {
         if (!in_array($mode, ["recommending","approving"])) return [];

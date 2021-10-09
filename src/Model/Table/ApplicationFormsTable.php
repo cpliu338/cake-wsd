@@ -161,6 +161,9 @@ class ApplicationFormsTable extends Table
     {
         $rules->add($rules->existsIn(['user_id'], 'Users'), ['errorField' => 'user_id']);
         $rules->add($rules->existsIn(['course_group_id'], 'CourseGroups'), ['errorField' => 'course_group_id']);
+        $rules->add($rules->isUnique(['user_id', 'course_group_id'], 
+            'This user_id, course_group_id combo is existing')
+        );
 
         return $rules;
     }

@@ -418,4 +418,8 @@ return [
     'Session' => [
         'defaults' => 'php',
     ],
+    'Division' => [
+        'tree' => ['MEM'=>'FB%', 'MEP'=>'FC%']
+    ],
+
 ];

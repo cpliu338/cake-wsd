@@ -14,19 +14,23 @@ use App\Model\Entity\CourseGroup;
 
 class CoursesUtils {
 
-    /* table objects */
+    use \Cake\Datasource\ModelAwareTrait;
+
+    /* table objects 
     var $CourseGroups;
     var $CourseInstances;
     var $Users;
     var $ApplicationForms;
 
     public function __construct(TableLocator $tableLocator) {
-        $this->CourseGroups = $tableLocator->get('CourseGroups');
-        $this->CourseInstances = $tableLocator->get('CourseInstances');
-        $this->Users = $tableLocator->get('Users');
-        $this->ApplicationForms = $tableLocator->get('ApplicationForms'); 
+        */
+    public function __construct() {
+        $this->loadModel('CourseGroups');
+        $this->loadModel('CourseInstances');
+        $this->loadModel('Users');
+        $this->loadModel('ApplicationForms'); 
     }
-
+    
     /**
      * Get a unique array of user ids to invite
      * @param mixed $invitees if an array, assume format same as PostsUtils::findSubordinates(),

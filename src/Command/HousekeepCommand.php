@@ -71,7 +71,7 @@ class HousekeepCommand extends Command
         //$cg = $courseGroupsTable->get(1892);
         $posts_util = new \App\Utils\PostsUtils($this->getTableLocator());
         $posts = ['EE/M(NTE1)'];
-        $course_util = new \App\Utils\CoursesUtils($this->getTableLocator());
+        $course_util = new \App\Utils\CoursesUtils();
         $result2 = [];
         try {
             $subordinates = $posts_util->findSubordinates($posts, 'recommending');

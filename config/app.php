@@ -421,5 +421,9 @@ return [
     'Division' => [
         'tree' => ['MEM'=>'FB%', 'MEP'=>'FC%']
     ],
+    'Path' => [
+        'attachment' => 'path_to_uploaded_files',
+        'nomform' => 'path_to_nomination_forms'
+    ],
 
 ];

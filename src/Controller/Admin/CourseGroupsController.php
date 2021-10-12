@@ -25,9 +25,13 @@ class CourseGroupsController extends AppController
         $ar = ['action'=>'upload'];
         $attachment = $this->request->getData('file');
         $ar['name'] = $attachment->getClientFilename();
+        // type image/gif, image/jpeg, application/pdf
         $ar['type'] = $attachment->getClientMediaType();
+        // in bytes
         $ar['size'] = $attachment->getSize();
         //$attachment->moveTo($target_path)
+        $util = new \App\Utils\AttachmentsUtils();
+        $ar['result'] = $util->saveBlankApplication(1, $attachment);
         $this->set('result', $ar);
         $this->viewBuilder()->setOption('serialize', ['result']);
     }

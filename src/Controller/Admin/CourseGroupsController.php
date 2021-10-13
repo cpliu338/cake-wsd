@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 use App\Controller\AppController;
+use App\Model\Entity\CourseGroup;
 
 /**
  * CourseGroups Controller
@@ -31,7 +32,17 @@ class CourseGroupsController extends AppController
         $ar['size'] = $attachment->getSize();
         //$attachment->moveTo($target_path)
         $util = new \App\Utils\AttachmentsUtils();
-        $ar['result'] = $util->saveBlankApplication(1, $attachment);
+        $result = $util->saveApplicationForm($this->CourseGroups->get(1), $attachment);
+        if ($result instanceof CourseGroup) {
+            $ar['result'] = "Saved, entity not updated";
+            if ($this->CourseGroups->save($result))
+                $ar['result'] = "Saved and updated";
+        }
+        else if (is_string($result)) {
+            $ar['result'] = $result;
+        }
+        else
+            $ar['result'] = "Cannot save uploaded file";
         $this->set('result', $ar);
         $this->viewBuilder()->setOption('serialize', ['result']);
     }

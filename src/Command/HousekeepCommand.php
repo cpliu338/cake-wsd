@@ -12,6 +12,7 @@ use Cake\Core\Configure;
 use Cake\I18n\FrozenTime;
 use Cake\Collection\Collection;
 use DateTime;
+use App\Model\Entity\CourseGroup;
 
 /**
  * Simple console wrapper around Psy\Shell.
@@ -41,15 +42,29 @@ class HousekeepCommand extends Command
     }
 
     private function housekeepTest(ConsoleIo $io) {
-        $this->loadModel('Posts');
-        $tree = Configure::read('Division.tree');
-        $course_util = new \App\Utils\CoursesUtils($this->getTableLocator());
-        $users = $this->Posts->find()
-            ->where(['title IN'=>['ME/P(4)', 'ME/P(8)', 'ME/P(13)']]);
-        //$io->out(var_export($users));
-        $io->out(var_export($course_util->cleanse($users), true));
-        $io->out($tree['MEM']);
-
+        $this->loadModel('CourseGroups');
+        $cg = $this->CourseGroups->get(1);
+        $util = new \App\Utils\AttachmentsUtils();
+        /*
+        $dest_path = $util->getCourseDetailsPath($cg);
+        $folder = new \Cake\Filesystem\Folder($dest_path);
+        $ar = $folder->find('application-form_001.*');
+        print_r($ar);return;
+        */
+        $result = $util->delCourseDetailFile($cg, 'application-form_001.docx');
+        if ($result instanceof CourseGroup) {
+            $cg = $this->CourseGroups->save($result);
+            $io->out("Deleted and updated entity");
+        }
+        else if (is_string($result)) {
+            $io->out($result);
+        }
+        else if (is_object($result)) {
+            $io->out(get_class($result));
+        }
+        else {
+            $io->out("No file deleted");
+        }
     }
 
     private function housekeepCourseGroups(ConsoleIo $io) {

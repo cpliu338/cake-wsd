@@ -5,19 +5,21 @@ namespace App\Utils;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\Query;
-use Cake\ORM\Locator\TableLocator;
+use Cake\Datasource\ModelAwareTrait;
+//\ORM\Locator\TableLocator;
 use Cake\I18n\FrozenTime;
 use Cake\Log\Log;
 
 class PostsUtils {
 
-    /* table objects */
+    use ModelAwareTrait;
+    /* table objects 
     var $Posts;
     var $ApplicationForms;
-
-    public function __construct(TableLocator $tableLocator) {
-        $this->Posts = $tableLocator->get('Posts');
-        $this->ApplicationForms = $tableLocator->get('ApplicationForms'); 
+*/
+    public function __construct() {//TableLocator $tableLocator) {
+        $this->loadModel('Posts');
+        $this->loadModel('ApplicationForms'); 
     }
 
     /**

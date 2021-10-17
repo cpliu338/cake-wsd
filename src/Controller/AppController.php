@@ -28,6 +28,9 @@ use Cake\Controller\Controller;
  */
 class AppController extends Controller
 {
+
+    protected $identity;
+
     /**
      * Initialization hook method.
      *
@@ -57,8 +60,8 @@ class AppController extends Controller
     public function beforeFilter(\Cake\Event\EventInterface $event)
     {
         parent::beforeFilter($event);
-    
-        $this->set('identity', $this->Authentication->getIdentity());
+        $this->identity = $this->Authentication->getIdentity();
+        $this->set('identity', $this->identity);
     }
 
 }

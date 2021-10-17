@@ -10,9 +10,11 @@
   </a>
   <ul class="nav nav-treeview">
     <li class="nav-item">
-      <a href="#" class="nav-link active">
+      <a href="<?=$this->Url->build([
+        'prefix'=>'Clerical', 'controller'=>'CourseGroups', 'action'=>'index'
+      ])?>" class="nav-link active">
         <i class="far fa-circle nav-icon"></i>
-        <p>Active Page</p>
+        <p>Admin Courses</p>
       </a>
     </li>
     <li class="nav-item">
@@ -26,6 +28,6 @@
 
 <li class="nav-item">
     <?= $this->Form->postLink(
-      __('Log out'), ['controller'=>'Users', 'action'=>'logout'], ['class'=>'nav-link', 'confirm'=>'OK?'])
+      __('Log out'), ['controller'=>'Users', 'action'=>'logout', 'prefix'=>false], ['class'=>'nav-link', 'confirm'=>'OK?'])
     ?>
 </li>

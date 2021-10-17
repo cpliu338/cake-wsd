@@ -16,10 +16,20 @@ use App\Utils\PostsUtils;
 class CourseGroupsController extends AppController
 {
     public function beforeFilter(EventInterface $event) {
-        $identity = $this->Authentication->getIdentity();
-        $user= $identity['staffid'];
-        $posts = array_map(function($p) {return $p['title'];}, $identity['posts']);
+        parent::beforeFilter($event);
+        $user= $this->identity['staffid'];
+        $posts = array_map(function($p) {return $p['title'];}, $this->identity['posts']);
         $this->set(compact('user', 'posts'));
+        if (!in_array($user, [3178])) {
+            if (!in_array($this->request->getParam('action'), ['index'])) {
+                $this->render('/Pages/forbidden');
+                return;
+            }
+        }
+    }
+
+    public function edit() {
+        return;
     }
 
     /**

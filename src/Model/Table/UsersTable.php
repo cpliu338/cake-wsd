@@ -65,6 +65,20 @@ class UsersTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        // FriendsOfCake Search plugin
+        $this->addBehavior('Search.Search');
+        $this->searchManager()
+        ->value('staffid')
+        ->add('nameContains', 'Search.Like', [
+            'before' => true,
+            'after' => true,
+            'fieldMode' => 'AND',
+            'comparison' => 'LIKE',
+            'wildcardAny' => '*',
+            'wildcardOne' => '?',
+            'fields' => ['name'],
+        ])
+        ;
 
         $this->hasMany('ApplicationForms', [
             'foreignKey' => 'user_id',

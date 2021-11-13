@@ -15,6 +15,13 @@ class UsersController extends AppController
     public function initialize(): void
     {
         parent::initialize();
+
+        $this->loadComponent('Search.Search', [
+            // This is default config. You can modify "actions" as needed to make
+            // the Search component work only for specified methods.
+            'actions' => ['index', 'lookup'],
+        ]);
+    
     }
 
     public function beforeFilter(\Cake\Event\EventInterface $event)
@@ -54,12 +61,23 @@ class UsersController extends AppController
     {
         $this->viewBuilder()->setLayout('cake_default');
         $identity = $this->Authentication->getIdentity();
-        $users = $this->paginate($this->Users);
+
+        $query = $this->Users
+        // Use the plugins 'search' custom finder and pass in the
+        // processed query params
+        ->find('search', ['search' => $this->request->getQueryParams()])
+        // You can add extra things to the query if you need to
+        ->contain(['Posts'])//->where(....)
+        ;
+
+        $users = $this->paginate($query);
         $data = ['username'=>'3178', 'password'=>'123'];
+        /*
         $users_utils = new \App\Utils\UsersUtils();
         $user = $users_utils->login($data);
         $data = $identity['posts'];
-        $this->set(compact('users', 'data', 'identity', 'user'));
+        */
+        $this->set(compact('users', 'identity'));
     }
 
     /**

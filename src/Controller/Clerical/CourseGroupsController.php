@@ -6,6 +6,7 @@ use App\Controller\AppController;
 use App\Model\Entity\CourseGroup;
 use Cake\Event\EventInterface;
 use App\Utils\PostsUtils;
+use App\Utils\UploadHandler;
 
 /**
  * CourseGroups Controller
@@ -26,6 +27,18 @@ class CourseGroupsController extends AppController
                 return;
             }
         }
+    }
+
+    public function upload() {
+        $upload_handler = new UploadHandler(['upload_dir' => '/var/www/html/uploads/',
+            'accept_file_types' => '/\.(pdf|jpe?g|png)$/i',
+            'user_specified_name' => 'course_details-001'
+        ]);
+        $result = $upload_handler->handle();
+        //$result['error'] = 0;
+        $response = $this->response->withType('application/json')
+            ->withStringBody(json_encode($result, JSON_UNESCAPED_SLASHES));
+        return $response;
     }
 
     public function edit() {

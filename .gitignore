@@ -6,6 +6,7 @@
 /tmp/*
 /vendor/*
 
+webroot/cake_lte/AdminLTE/.*
 # OS generated files #
 ######################
 .DS_Store

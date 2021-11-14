@@ -42,6 +42,17 @@ class CourseGroupsController extends AppController
     }
 
     public function edit() {
+        $token = new \Alt3\CakeTokens\RandomBytesToken();
+        $token->setCategory('password-reset');
+        $token->setLifetime('+1 week');
+      
+        // save the token object
+        $table = \Cake\Orm\TableRegistry::get('Alt3/CakeTokens.Tokens');
+        $entity = $table->newEntity($token->toArray());
+      
+        if ($table->save($entity)) {
+          $this->Flash->success('Successfully saved token with id ' . $entity->id);
+        }
         return;
     }
 

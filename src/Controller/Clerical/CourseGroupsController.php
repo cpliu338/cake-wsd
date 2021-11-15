@@ -16,15 +16,23 @@ use App\Utils\UploadHandler;
  */
 class CourseGroupsController extends AppController
 {
+
+    public function initialize(): void
+    {
+        parent::initialize();
+    }
+    
     public function beforeFilter(EventInterface $event) {
         parent::beforeFilter($event);
-        $user= $this->identity['staffid'];
-        $posts = array_map(function($p) {return $p['title'];}, $this->identity['posts']);
-        $this->set(compact('user', 'posts'));
-        if (!in_array($user, [3178])) {
-            if (!in_array($this->request->getParam('action'), ['index'])) {
-                $this->render('/Pages/forbidden');
-                return;
+        if (!empty($this->identity)) {
+            $user= $this->identity['staffid'];
+            $posts = array_map(function($p) {return $p['title'];}, $this->identity['posts'] ?? []);
+            $this->set(compact('user', 'posts'));
+            if (!in_array($user, [3178])) {
+                if (!in_array($this->request->getParam('action'), ['index'])) {
+                    $this->render('/Pages/forbidden');
+                    return;
+                }
             }
         }
     }
@@ -42,6 +50,7 @@ class CourseGroupsController extends AppController
     }
 
     public function edit() {
+        /*
         $token = new \Alt3\CakeTokens\RandomBytesToken();
         $token->setCategory('password-reset');
         $token->setLifetime('+1 week');
@@ -53,6 +62,7 @@ class CourseGroupsController extends AppController
         if ($table->save($entity)) {
           $this->Flash->success('Successfully saved token with id ' . $entity->id);
         }
+        */
         return;
     }
 

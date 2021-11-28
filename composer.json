@@ -30,14 +30,16 @@
     "autoload": {
         "psr-4": {
             "App\\": "src/",
-            "Alt3\\CakeTokens\\": "plugins/Alt3/CakeTokens/src/"
+            "Alt3\\CakeTokens\\": "plugins/Alt3/CakeTokens/src/",
+            "ChunkedFileUpload\\": "plugins/ChunkedFileUpload/src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
             "App\\Test\\": "tests/",
             "Cake\\Test\\": "vendor/cakephp/cakephp/tests/",
-            "Alt3\\CakeTokens\\Test\\": "plugins/Alt3/CakeTokens/tests/"
+            "Alt3\\CakeTokens\\Test\\": "plugins/Alt3/CakeTokens/tests/",
+            "ChunkedFileUpload\\Test\\": "plugins/ChunkedFileUpload/tests/"
         }
     },
     "scripts": {

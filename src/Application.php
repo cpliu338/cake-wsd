@@ -52,6 +52,8 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
      */
     public function bootstrap(): void
     {
+        $this->addPlugin('ChunkedFileUpload');
+
         $this->addPlugin('Alt3/CakeTokens');
 
         $this->addPlugin('Search');

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 namespace App\Controller;
+use ChunkedFileUpload\Handler\UploadTrait;
 
 /**
  * CourseGroups Controller
@@ -11,6 +12,7 @@ namespace App\Controller;
  */
 class CourseGroupsController extends AppController
 {
+    use UploadTrait;
     /**
      * Index method
      *
@@ -20,7 +22,50 @@ class CourseGroupsController extends AppController
     {
         $courseGroups = $this->paginate($this->CourseGroups);
 
+        $this->garbageCollectTmpfolders(TMP);
         $this->set(compact('courseGroups'));
+
+    }
+
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+        //$this->Authentication->allowUnauthenticated(['uploadComplete']);
+    }
+
+    public function uploadComplete() {
+        // Do things like persist an entity related to the upload
+        //$upload_dir = TMP . $this->request->getData('tmpfolder');
+        $body = [];
+        //$body['upload_dir'] = $upload_dir;
+        $result = $this->moveUploadedFile(TMP, '/var/www/html/uploads', 'file123');
+        if (array_key_exists('exception', $result)) {
+            $body['msg'] = var_export($result['exception'], true);
+        }
+        else {
+            $body = array_merge($body, $result);
+            $body['msg'] = sprintf("Uploaded %s, size %s", $body['name'], $body['size']);
+            $body['redirect'] = \Cake\Routing\Router::url(['action'=>'index', 'controller'=>'CourseGroups', 'prefix'=>'Clerical'], true);
+        }
+        return $this->response->withStatus(200)->withType('application/json')
+            ->withStringBody(json_encode($body, JSON_UNESCAPED_SLASHES));
+    }
+
+    public function upload() {
+        //$upload_base = TMP;
+        //$upload_dir = $upload_base . $this->request->getData('tmpfolder');
+        // . $this->request->getData('tmpfolder') ?? $this->request->getSession()->id();
+        $result = $this->handleUpload([
+            //'upload_dir' => $upload_dir . DS,
+            'upload_base' => TMP,
+            'accept_file_types' => '/\.(pdf|jpe?g|png)$/i',
+        ]);
+/*        $result['tmpfolder'] = $this->request->getData('tmpfolder');
+        $result['upload_name'] = $result['upload']['name'];*/
+        return $this->response
+            //->withType('application/json') done in $this->handleUpload
+            ->withStringBody(json_encode($result, JSON_UNESCAPED_SLASHES));
+        //return $response;
     }
 
     /**

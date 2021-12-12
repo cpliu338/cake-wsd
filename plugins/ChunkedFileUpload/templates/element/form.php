@@ -33,10 +33,14 @@ onComplete: if defined, a function to be called on completion of upload
 ?>
 <script>
     $(function () {
+        var jqXHR;
         $('#<?=$prefix?>-file').fileupload({
             //dataType: 'json',
             maxChunkSize: <?= $maxChunkSize ?? 1000000?>, // default 1 MB
-            done: function (e, data) {
+            add: function (e,data) {
+                jqXHR = data.submit();
+            },
+            done1: function (e, data) {
                 /*
                 {
                     "upload":{
@@ -77,14 +81,29 @@ onComplete: if defined, a function to be called on completion of upload
                         result.text(data.msg);
                         }
                         if (data.redirect) {
-                            window.location = data.redirect;
+                            //window.location = data.redirect;
                         }
                     });
                 }
                 <?php endif;?>
             }
+        })
+        .on('fileuploaddone', function (e, data) {
+            console.log('fileuploaddone');
+        })
+        .on('fileuploadchunkbeforesend', function (e, data) {
+            console.log('chunkbeforesend');
+            data.jqXHR.abort();
+            return false;
+        })
+        
+        .on('fileuploadchunkdone', function (e, data) {
+            console.log('fileuploadchunkdone');
+            //console.log(JSON.stringify(data.result));
+            jqXHR.abort();
         });
-/*
+    });
+<?php /*
 image: /image\/(jpe?g|gif|png)/i
 pdf: /application\/pdf/i
 csv: /text\/csv/i
@@ -107,8 +126,7 @@ audio: /audio\/.+/i
                 return false;
             }
         })
-*/
-    });
+*/ ?>
 </script>
 <?php $this->end(); ?>
     

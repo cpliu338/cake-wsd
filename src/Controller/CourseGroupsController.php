@@ -22,8 +22,12 @@ class CourseGroupsController extends AppController
     {
         $courseGroups = $this->paginate($this->CourseGroups);
 
-        $this->garbageCollectTmpfolders(TMP);
-        $this->set(compact('courseGroups'));
+        $courseGroup = $this->CourseGroups->newEntity(['title' =>"select Task.time_id time_id,
+        Task.task_time_id from sm_task TASK left join dl_work on task.id=dl_work.dl_id where ",
+        'attachments'=>'/select(.+)from(.+)(where.+)/is'
+        ]);
+
+        $this->set(compact('courseGroups', 'courseGroup'));
 
     }
 
@@ -33,40 +37,6 @@ class CourseGroupsController extends AppController
         //$this->Authentication->allowUnauthenticated(['uploadComplete']);
     }
 
-    public function uploadComplete() {
-        // Do things like persist an entity related to the upload
-        //$upload_dir = TMP . $this->request->getData('tmpfolder');
-        $body = [];
-        //$body['upload_dir'] = $upload_dir;
-        $result = $this->moveUploadedFile(TMP, '/var/www/html/uploads', 'file123');
-        if (array_key_exists('exception', $result)) {
-            $body['msg'] = var_export($result['exception'], true);
-        }
-        else {
-            $body = array_merge($body, $result);
-            $body['msg'] = sprintf("Uploaded %s, size %s", $body['name'], $body['size']);
-            $body['redirect'] = \Cake\Routing\Router::url(['action'=>'index', 'controller'=>'CourseGroups', 'prefix'=>'Clerical'], true);
-        }
-        return $this->response->withStatus(200)->withType('application/json')
-            ->withStringBody(json_encode($body, JSON_UNESCAPED_SLASHES));
-    }
-
-    public function upload() {
-        //$upload_base = TMP;
-        //$upload_dir = $upload_base . $this->request->getData('tmpfolder');
-        // . $this->request->getData('tmpfolder') ?? $this->request->getSession()->id();
-        $result = $this->handleUpload([
-            //'upload_dir' => $upload_dir . DS,
-            'upload_base' => TMP,
-            'accept_file_types' => '/\.(pdf|jpe?g|png)$/i',
-        ]);
-/*        $result['tmpfolder'] = $this->request->getData('tmpfolder');
-        $result['upload_name'] = $result['upload']['name'];*/
-        return $this->response
-            //->withType('application/json') done in $this->handleUpload
-            ->withStringBody(json_encode($result, JSON_UNESCAPED_SLASHES));
-        //return $response;
-    }
 
     /**
      * View method
@@ -77,11 +47,62 @@ class CourseGroupsController extends AppController
      */
     public function view($id = null)
     {
-        $courseGroup = $this->CourseGroups->get($id, [
-            'contain' => ['ApplicationForms', 'CourseInstances'],
-        ]);
+        if ($this->request->is('post')) {
+        /* "select Task.time_id time_id,
+        Task.task_time_id from sm_task TASK left join dl_work on task.id=dl_work.dl_id where "
+         */
+            $url = $this->request->getData('title');
+            // select_pattern /select(.+)from(.+)(where.+)/is
+            $dt_column = $this->request->getData('attachments');
+            $full_pattern = '/select(.+)from(.+)(where.+)/is';
+            $short_pattern = '/select(.+)from(.+)/is';
+            if (preg_match($full_pattern, $url, $matches)) {
+                $result['fields'] = $this->parseFields($matches[1]);
+                $result['tables'] = $matches[2];
+                $result['criteria'] = $this->parseCriteria(substr($matches[3],5), $dt_column, $result['fields']);
+            }
+            else if (preg_match($short_pattern, $url, $matches)) {
+                $result['fields'] = $this->parseFields($matches[1]);
+                $result['tables'] = $matches[2];
+                $result['criteria'] = '';
+            }
+            $courseGroup = var_export($result, true);
 
+        }
+        else {
+            $courseGroup = $this->CourseGroups->get($id, [
+                'contain' => ['ApplicationForms', 'CourseInstances'],
+            ]);
+        }
+        
         $this->set(compact('courseGroup'));
+        $this->viewBuilder()->setOption('serialize', ['courseGroup']);
+    }
+
+    private function parseCriteria($raw, $dt_column, $fields) {
+        $crit = trim($raw);
+        $col = strtoupper(trim($dt_column));
+        if (empty($crit))
+            return '';
+        if (in_array($col, $fields)) {
+            $now = new \Cake\I18n\FrozenDate("now");
+            return sprintf("WHERE (%s) AND %s < TO_DATE('%s', 'yyyy-mm-dd')", $raw, $col,
+            $now->subYears(3)->i18nFormat('yyyy-MM-dd'));
+            
+        }
+        else 
+            return "WHERE $raw";
+    }
+
+    private function parseFields($fields) {
+        $parsed = array_map(function ($token) {
+            $field = preg_split('/\s+/', trim($token));
+            switch (count($field)) {
+                case 2: return strtoupper(trim($field[1]));
+                default: return strtoupper(trim($token));
+            }
+        }, preg_split('/\s*,\s*/', trim($fields)));
+        return $parsed;
     }
 
     /**

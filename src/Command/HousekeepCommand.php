@@ -42,29 +42,9 @@ class HousekeepCommand extends Command
     }
 
     private function housekeepTest(ConsoleIo $io) {
-        $this->loadModel('CourseGroups');
-        $cg = $this->CourseGroups->get(1);
-        $util = new \App\Utils\AttachmentsUtils();
-        /*
-        $dest_path = $util->getCourseDetailsPath($cg);
-        $folder = new \Cake\Filesystem\Folder($dest_path);
-        $ar = $folder->find('application-form_001.*');
-        print_r($ar);return;
-        */
-        $result = $util->delCourseDetailFile($cg, 'application-form_001.docx');
-        if ($result instanceof CourseGroup) {
-            $cg = $this->CourseGroups->save($result);
-            $io->out("Deleted and updated entity");
-        }
-        else if (is_string($result)) {
-            $io->out($result);
-        }
-        else if (is_object($result)) {
-            $io->out(get_class($result));
-        }
-        else {
-            $io->out("No file deleted");
-        }
+        $this->log('notice', 'notice');
+        $this->log('info', 'info'); 
+        $this->log('debug','debug');
     }
 
     private function housekeepCourseGroups(ConsoleIo $io) {

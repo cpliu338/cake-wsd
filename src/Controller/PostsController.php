@@ -11,6 +11,52 @@ namespace App\Controller;
  */
 class PostsController extends AppController
 {
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+        $this->Authentication->allowUnauthenticated(['upload', 'confirm']);
+    }
+
+    public function confirm() {
+        return $this->response->withStringBody(json_encode(
+            $this->request->getData('rows')));
+    }
+
+    public function upload() {
+        $columns = ['title', 'division'];
+        $post = $this->Posts->newEmptyEntity();
+        if ($this->request->is('post')) {
+            /*{"type":"text/csv","size":2573,"tmpName":"/tmp/phptiKNXv","error":0} */
+            $file = $this->request->getData('file');
+            $status = [];
+            if ($file) {
+                $status = array_merge($status, [
+                'type' => $file->getClientMediaType(),
+                'size' => $file->getSize(),
+                'tmpName' => $file->getStream()->getMetadata('uri'),
+                'error' => $file->getError(),
+                ]);
+            }
+            $rows = [];
+            if (($handle = fopen($file->getStream()->getMetadata('uri'), "r")) !== FALSE) {
+                while (($data = fgetcsv($handle, 5000, ",")) !== FALSE) {
+                    array_push($rows, $data);
+                }
+                fclose($handle);
+                //$status['rows'] = $rows;
+            }
+            else {
+                $status['error'] = 'no handle';
+            }
+            array_shift($rows); //discard header
+            $start_serial = ($this->request->getData('serial') ?? 0) + 1;
+            $this->set(compact('status', 'rows', 'start_serial'));
+            $this->render('upload_result');
+            //$this->viewBuilder()->setOption('serialize', ['status', 'rows']);
+            //return $this->response->withStringBody(json_encode($status, JSON_UNESCAPED_SLASHES));
+        }
+        $this->set(compact('columns', 'post'));
+    }
     /**
      * Index method
      *

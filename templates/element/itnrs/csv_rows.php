@@ -8,7 +8,7 @@ $rows: [
 $serial = $start_serial ?? 0;
 ?>
 <?php foreach ($rows as $cols):?>
-    <tr data-serial="<?=$serial?>"><td>Del</td>
+    <tr><?php /* data-serial="< =$serial? >"><td>Del</td> */?>
     <?php foreach ($cols as $col):?>
         <td><?=h($col)?></td>
     <?php endforeach;?>

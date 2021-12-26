@@ -18,8 +18,33 @@ class PostsController extends AppController
     }
 
     public function confirm() {
-        return $this->response->withStringBody(json_encode(
-            $this->request->getData('rows')));
+        $rows = $this->request->getData('rows');
+        $ids = [];
+        try {
+            $this->Posts->getConnection()->transactional(function ($conn) use ($rows, $ids) {
+                foreach ($rows as $row) {
+                    $post = $this->Posts->newEmptyEntity();
+                    $post = $this->Posts->patchEntity($post, $row);
+                    $post->set('post_name', $row['title']);
+                    $post->set('tree_code','XXX');
+                    $post->set('user_id',343);
+                    $post->set('unit','M');
+                    $post->set('recommending_posts', '');
+                    $post->set('approving_posts','');
+                    $post->set('level', 1);
+                    $post->set('required_courses', '');
+                    $result = $this->Posts->save($post);
+                    if (!$result)   
+                        throw new \Exception($row['title']);
+                    array_push($ids, $post->id);            
+                }
+                throw new \Exception("Finished");    
+            });
+        } catch (\Exception $ex) {
+            $rows = $ex->getMessage();
+        }
+        $this->set(compact('rows', 'ids'));
+        $this->viewBuilder()->setOption('serialize', ['rows', 'ids']);
     }
 
     public function upload() {

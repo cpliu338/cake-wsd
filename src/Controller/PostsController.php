@@ -93,8 +93,9 @@ class PostsController extends AppController
             'contain' => ['Users'],
         ];
         $posts = $this->paginate($this->Posts);
-
+        
         $this->set(compact('posts'));
+        $this->viewBuilder()->setOption('serialize', ['posts']);
     }
 
     /**

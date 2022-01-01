@@ -21,9 +21,30 @@
     </tfoot>
 </table>
 <?php
+    echo $this->Form->create($post),
+    $this->Form->control('division', ['type'=>'select', 'options'=>[0,1,2,3]]);
+    for ($i=0; $i<3; $i++) {
+        echo $this->Form->control(sprintf('attrib_name%d', $i+1));
+    }
+    echo $this->Form->button('Submit'),
+    $this->Form->end();
     $this->append('script');
 ?>
 <script>
+    $("#division").change(function (ev) {
+        $.ajax({
+            dataType: "json",
+            url: "<?=$this->Url->build(['action'=>'index'])?>?sort=id&page="
+            + (parseInt($(this).val()))
+        }).done(function(data){
+            for (i=0; i<3; i++) {
+                post = data.posts[i];
+                //console.log(post);
+                $("#attrib-name" + (i+1)).prev('label').text(post.post_name);
+            }
+        });
+    });
+
     $("#upload").click(function (ev) {
         ev.preventDefault();
         formData = new FormData($(this).closest('form')[0]);
